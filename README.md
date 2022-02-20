@@ -3,6 +3,7 @@ Picture this: Its 2014, and Trap Nation has dropped another absolute heater on t
 
 The aim of this project is to recreate the epilepsy inducing visualizer from Trap Nation's glory days, but now allowing us to sync it to any spotify song, rather than having to wait for the newest trap nation heater...
 
+An example of the scenario above: https://www.youtube.com/watch?v=GnQcMBzhr8E&ab_channel=TrapNation
 
 Tech used
 Spotify API: Duh.
