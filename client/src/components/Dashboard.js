@@ -1,9 +1,9 @@
 import { Box, Container, FormControl, Input, InputLabel} from '@mui/material';
 import React, { useState, useEffect } from 'react'
-import useAuth from './useAuth'
 import SpotifyWebApi from "spotify-web-api-node";
 import TrackResult from './TrackResult'
 import AudioPlayer from './AudioPlayer';
+import useAuth from '../hooks/useAuth';
 
 const spotifyAPI = new SpotifyWebApi({
     clientId:"a4a973fdd7b04086abbccb93d5fd8360",
