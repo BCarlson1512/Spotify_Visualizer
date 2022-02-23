@@ -8,6 +8,10 @@ An example of the scenario above: `https://www.youtube.com/watch?v=GnQcMBzhr8E&a
 
 Live Demo: Coming soon...
 
+## Issues/Mental Blocks
+
+- Spotify API provides TONS of data, specifically related to audio analysis. Meaning that the MDN web audio API is not of any use here, since we don't have an audio file to process. Using Web Audio API, you can just plug a sound file into FFT (Fast Fourier Transform) to perform signal processing, whereas the data here needs to be formatted in a way that it can be roughly grouped into columns, that are ultimately shown. This was decided using a data structure of the current nature ```js {starttime, finishtime, frequency, loudness}```
+
 ## Stages
 
 - [x] Connect to Spotify API
@@ -19,7 +23,6 @@ Live Demo: Coming soon...
 ## Tech used
 
 Spotify API: Duh.
-Web Audio Api
 Frontend: React.js, Material UI, react-spotify-web-playback
 Backend: Express.js
 
