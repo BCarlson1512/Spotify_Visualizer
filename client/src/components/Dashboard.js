@@ -4,6 +4,8 @@ import SpotifyWebApi from "spotify-web-api-node";
 import TrackResult from './TrackResult'
 import AudioPlayer from './AudioPlayer';
 import useAuth from '../hooks/useAuth';
+import Axios from 'axios';
+import TrackVisualizer from './TrackVisualizer';
 
 const spotifyAPI = new SpotifyWebApi({
     clientId:"a4a973fdd7b04086abbccb93d5fd8360",
@@ -14,8 +16,12 @@ function Dashboard({ code }) {
     const [Search, setSearch] = useState("");
     const [searchResults, setSearchResults]  = useState([]);
     const [currentTrack, setCurrentTrack] = useState();
+    const [trackURI, setTrackURI] = useState();
+
+    const [trackAnalysis, setTrackAnalysis] = useState();
 
     const selectTrack = (track) => {
+        setTrackURI(track.uri);
         setCurrentTrack(track);
         setSearch("");
     }
@@ -54,19 +60,47 @@ function Dashboard({ code }) {
         })
         return updateCancel;
     }, [Search, accessToken]);
+
+    // analyze specific track
+    useEffect(()=> {
+        if(!trackURI) return;
+        //console.log(trackURI)
+        Axios.get("http://localhost:3001/analyze", {params: {
+            track_uri: trackURI,
+            access_token: accessToken
+        }}).then( res => {
+            console.log(res.data)
+            setTrackAnalysis(res.data);
+        }).catch(()=> {
+            console.log("An error occurred");
+        });
+    }, [trackURI, accessToken]);
+
     return (
-        <Container style={{display: 'flex', flexDirection: 'column', height: "100vh", }}>
+        <Container style={{display: 'flex', flexDirection: 'column', height: "96vh", }}>
             <FormControl>
                 <InputLabel htmlFor="input-field">Search Artists/Songs</InputLabel>
                 <Input id="input-field" value={Search} onChange={e => setSearch(e.target.value)}/>
             </FormControl>
             
-            <Box flexGrow={1} style={{overflowY: 'auto'}}> Search Results 
+            <Box flexGrow={1} style={{overflowY: 'auto'}}>
+            <p>Search Results</p>
             {searchResults.map(track => {
-                return <TrackResult props={track} key={track.uri} selectTrack={selectTrack}/>
+                return <TrackResult props={track} key={track.uri} selectTrack={selectTrack} />
             })}
-                
             </Box>
+            {trackAnalysis &&
+                <Box>
+                    <TrackVisualizer 
+                    beats={trackAnalysis.beats} 
+                    bars={trackAnalysis.bars}
+                    sections={trackAnalysis.sections}
+                    segments={trackAnalysis.segments}
+                    tatums={trackAnalysis.tatums}
+                    track_key={trackAnalysis.track.key}
+                    />
+                </Box>
+            }
             <Box> 
                 <AudioPlayer accessToken={accessToken} trackUri={currentTrack} />
             </Box>

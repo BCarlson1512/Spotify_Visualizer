@@ -56,5 +56,31 @@ app.post("/refresh", (req,res) => {
     );
 });
 
+// song analysis from spotiy API
+app.get("/analyze", (req,res) => {
+    const trackUri = req.query.track_uri.replace("spotify:track:","");
+    const accessToken = req.query.access_token;
+    //console.log(trackUri)
+    const spotifyWebAPI = new SpotifyWebAPI({
+        redirectUri: "http://localhost:3000/",
+        clientId: process.env.SPOTIFY_CLIENT_ID,
+        clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
+    });
+    spotifyWebAPI.setAccessToken(accessToken);
+    spotifyWebAPI.getAudioAnalysisForTrack(trackUri).then(
+        (data) => {
+            //console.log(data.body.segments);
+            const dataAnalysis = data.body;
+            res.send(dataAnalysis)
+        }).catch((err)=> {
+            console.log(err);
+            res.sendStatus(400);
+        });
+});
+
+app.get("/currentlyPlaying", (req, res) => {
+    //TODO: Fetch timestamp of current track playing
+});
+
 app.listen(process.env.PORT);
 console.log(`Listening on Port: ` + process.env.PORT);
