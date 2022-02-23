@@ -90,14 +90,14 @@ function Dashboard({ code }) {
             })}
             </Box>
             {trackAnalysis &&
-                <Box>
+                <Box sx={{paddingBottom:"1vh"}}>
                     <TrackVisualizer 
                     beats={trackAnalysis.beats} 
                     bars={trackAnalysis.bars}
                     sections={trackAnalysis.sections}
                     segments={trackAnalysis.segments}
                     tatums={trackAnalysis.tatums}
-                    track_key={trackAnalysis.track.key}
+                    track={trackAnalysis.track}
                     />
                 </Box>
             }
