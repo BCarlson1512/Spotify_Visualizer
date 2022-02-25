@@ -19,7 +19,10 @@ const processSegments = (sections, segments) => {
             const vol = Math.abs(segment.loudness_max)
             for (const pitch of segment.pitches) {
                 const freq = startingFrequency * pitch;
-                segmentData.push({startTime: Math.ceil((segment.start) * 100) / 100, finishTime: Math.ceil((segment.start + segment.duration) * 100) / 100, frequency: freq, volume: vol * pitch});
+                const tmpObj = {startTime: Math.ceil((segment.start) * 100) / 100, finishTime: Math.ceil((segment.start + segment.duration) * 100) / 100, frequency: freq, volume: vol * pitch};
+                if(segmentData.filter((e) => {return e.frequency === freq}).length === 0) {
+                    segmentData.push(tmpObj);
+                }
             }
         }
     }
@@ -150,6 +153,10 @@ export default function TrackVisualizer(props) {
     const {tatums} = props;
     const {track} = props;
     
+    /*TODO: Further optimization, process data before it is sent to its respective component
+    const {segData} = props;
+    const {freqBands} = props;
+    */
     // waveform Constants
     const numBars = 50;
     const segData = processSegments(sections, segments);
@@ -177,10 +184,10 @@ export default function TrackVisualizer(props) {
     /* hook for updating waveform data */
     useEffect(() => {
         if(waveformState.timeSignature === segData[segData.length - 1].finishTime) return;
-        console.log(waveformState)
+        //console.log(waveformState)
         let newData = segData.filter(segment => segment.startTime === waveformState.timeSignature)
-        console.log(newData);
-        const interval = setInterval(() =>{
+        //console.log(newData);
+        let timeout = setTimeout(() => {
             let barSteps = updateBars(freqBands, waveformState.timeSigData);
             setWaveFormState({
                 timeSignature: newData[0].finishTime,
@@ -188,11 +195,12 @@ export default function TrackVisualizer(props) {
                 barsConfig: updateBarParams(numBars, barSteps),
             });
         }, (newData[0].finishTime - newData[0].startTime))
-        return () => clearInterval(interval);
-    },[waveformState, segData, freqBands]);
+        return () => clearTimeout(timeout);
+    },[]);
+    /*[waveformState, segData, freqBands]*/
     return (
         <Container>
-        <Box sx={{display:"flex", justifyContent:"space-between"}}>
+        <Box sx={{display:"flex", justifyContent:"space-between", paddingBottom:"15vw"}}>
             <Typography gutterBottom variant ="h5" style={{marginLeft:"3",}}>Visualization</Typography>
             <Button variant="contained" color="success" onClick={(e)=> analyticsClickHandler(e)}>{!displayAnalytics? "Show" : "Hide"} Analytics</Button>
         </Box>
