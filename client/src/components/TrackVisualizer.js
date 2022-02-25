@@ -1,12 +1,14 @@
 import { Container, Box, Typography, Button } from '@mui/material';
 import React, { useEffect, useState } from 'react'
 
+//TODO: Componentize the visualizer bars
 
-/**
+/** TODO: Move into parent component
  * Wrapper function for every segment + section
  * @param Dataobj in the form {starttime, finishtime, frequency, volume}
  */
 const processSegments = (sections, segments) => {
+    console.log("functioncall");
     const segmentData = [];
     // C = 0, Cmaj = 1... see spotify API for further documentation
     const keyFreqs = [261.63, 277.18, 293.665, 311.127, 329.628, 349.228, 369.994, 391.995, 415.305, 440, 466.164, 493.883]
@@ -180,14 +182,13 @@ export default function TrackVisualizer(props) {
         e.preventDefault();
         setDisplayAnalytics(!displayAnalytics);
     }
-    console.log(segData)
     /* hook for updating waveform data */
     useEffect(() => {
         if(waveformState.timeSignature === segData[segData.length - 1].finishTime) return;
         //console.log(waveformState)
         let newData = segData.filter(segment => segment.startTime === waveformState.timeSignature)
         //console.log(newData);
-        let timeout = setTimeout(() => {
+        setTimeout(() => {
             let barSteps = updateBars(freqBands, waveformState.timeSigData);
             setWaveFormState({
                 timeSignature: newData[0].finishTime,
@@ -195,8 +196,7 @@ export default function TrackVisualizer(props) {
                 barsConfig: updateBarParams(numBars, barSteps),
             });
         }, (newData[0].finishTime - newData[0].startTime))
-        return () => clearTimeout(timeout);
-    },[]);
+    },[waveformState, segData, freqBands]);
     /*[waveformState, segData, freqBands]*/
     return (
         <Container>
