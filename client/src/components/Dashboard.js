@@ -17,9 +17,8 @@ function Dashboard({ code }) {
     const [searchResults, setSearchResults]  = useState([]);
     const [currentTrack, setCurrentTrack] = useState();
     const [trackURI, setTrackURI] = useState();
-
     const [trackAnalysis, setTrackAnalysis] = useState();
-
+    const [segData, setSegData] = useState([]);
     const selectTrack = (track) => {
         setTrackURI(track.uri);
         setCurrentTrack(track);
@@ -69,8 +68,9 @@ function Dashboard({ code }) {
             track_uri: trackURI,
             access_token: accessToken
         }}).then( res => {
-            console.log(res.data)
-            setTrackAnalysis(res.data);
+            //console.log(res.data.segments)
+            setSegData(res.data.segments);
+            setTrackAnalysis(res.data.tracks);
         }).catch(()=> {
             console.log("An error occurred");
         });
@@ -89,7 +89,7 @@ function Dashboard({ code }) {
                 return <TrackResult props={track} key={track.uri} selectTrack={selectTrack} />
             })}
             </Box>
-            {trackAnalysis &&
+            {(trackAnalysis && segData) &&
                 <Box sx={{paddingBottom:"1vh"}}>
                     <TrackVisualizer 
                     beats={trackAnalysis.beats} 
@@ -98,6 +98,7 @@ function Dashboard({ code }) {
                     segments={trackAnalysis.segments}
                     tatums={trackAnalysis.tatums}
                     track={trackAnalysis.track}
+                    segData={segData}
                     />
                 </Box>
             }

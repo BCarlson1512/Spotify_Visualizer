@@ -3,34 +3,6 @@ import React, { useEffect, useState } from 'react'
 
 //TODO: Componentize the visualizer bars
 
-/** TODO: Move into parent component
- * Wrapper function for every segment + section
- * @param Dataobj in the form {starttime, finishtime, frequency, volume}
- */
-const processSegments = (sections, segments) => {
-    console.log("functioncall");
-    const segmentData = [];
-    // C = 0, Cmaj = 1... see spotify API for further documentation
-    const keyFreqs = [261.63, 277.18, 293.665, 311.127, 329.628, 349.228, 369.994, 391.995, 415.305, 440, 466.164, 493.883]
-    for(const section of sections) {
-        const startingFrequency = keyFreqs[section.key];
-        const endTime = section.start + section.duration;
-        // aggregate the pitches
-        for(const segment of segments) {
-            if(segment.start + segment.duration >= endTime) break; // out of range
-            const vol = Math.abs(segment.loudness_max)
-            for (const pitch of segment.pitches) {
-                const freq = startingFrequency * pitch;
-                const tmpObj = {startTime: Math.ceil((segment.start) * 100) / 100, finishTime: Math.ceil((segment.start + segment.duration) * 100) / 100, frequency: freq, volume: vol * pitch};
-                if(segmentData.filter((e) => {return e.frequency === freq}).length === 0) {
-                    segmentData.push(tmpObj);
-                }
-            }
-        }
-    }
-    return segmentData;
-}
-
 /**
  * Updates the bar color/height from live data... TODO: Implement live data, rather than default results
  */
@@ -151,17 +123,17 @@ export default function TrackVisualizer(props) {
     const {beats} = props;
     const {bars} = props;
     const {sections} = props;
-    const {segments} = props;
     const {tatums} = props;
     const {track} = props;
-    
+    const {segments} = props;
+    const {segData} = props;
     /*TODO: Further optimization, process data before it is sent to its respective component
     const {segData} = props;
     const {freqBands} = props;
     */
     // waveform Constants
     const numBars = 50;
-    const segData = processSegments(sections, segments);
+    //const segData = processSegments(sections, segments);
     const freqBands = initFreqBands(maxFreq(segData),numBars);
 
     // usestates
@@ -182,20 +154,22 @@ export default function TrackVisualizer(props) {
         e.preventDefault();
         setDisplayAnalytics(!displayAnalytics);
     }
+    console.log(segData)
     /* hook for updating waveform data */
     useEffect(() => {
         if(waveformState.timeSignature === segData[segData.length - 1].finishTime) return;
         //console.log(waveformState)
         let newData = segData.filter(segment => segment.startTime === waveformState.timeSignature)
-        //console.log(newData);
-        setTimeout(() => {
+        console.log(newData);
+        const timeout = setTimeout(() => {
             let barSteps = updateBars(freqBands, waveformState.timeSigData);
             setWaveFormState({
                 timeSignature: newData[0].finishTime,
                 timeSigData: newData,
                 barsConfig: updateBarParams(numBars, barSteps),
             });
-        }, (newData[0].finishTime - newData[0].startTime))
+            
+        }, (newData[0].finishTime - newData[0].startTime) * 10)
     },[waveformState, segData, freqBands]);
     /*[waveformState, segData, freqBands]*/
     return (

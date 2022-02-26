@@ -56,6 +56,34 @@ app.post("/refresh", (req,res) => {
     );
 });
 
+/**
+ * Wrapper function for every segment + section
+ * @param Dataobj in the form {starttime, finishtime, frequency, volume}
+ */
+ const processSegments = (sections, segments) => {
+    console.log("functioncall");
+    const segmentData = [];
+    // C = 0, Cmaj = 1... see spotify API for further documentation
+    const keyFreqs = [261.63, 277.18, 293.665, 311.127, 329.628, 349.228, 369.994, 391.995, 415.305, 440, 466.164, 493.883]
+    for(const section of sections) {
+        const startingFrequency = keyFreqs[section.key];
+        const endTime = section.start + section.duration;
+        // aggregate the pitches
+        for(const segment of segments) {
+            if(segment.start + segment.duration >= endTime) break; // out of range
+            const vol = Math.abs(segment.loudness_max)
+            for (const pitch of segment.pitches) {
+                const freq = startingFrequency * pitch;
+                const tmpObj = {startTime: Math.ceil((segment.start) * 100) / 100, finishTime: Math.ceil((segment.start + segment.duration) * 100) / 100, frequency: freq, volume: vol * pitch};
+                if(segmentData.filter((e) => {return e.frequency === freq}).length === 0) {
+                    segmentData.push(tmpObj);
+                }
+            }
+        }
+    }
+    return segmentData;
+}
+
 // song analysis from spotiy API
 app.get("/analyze", (req,res) => {
     const trackUri = req.query.track_uri.replace("spotify:track:","");
@@ -69,9 +97,11 @@ app.get("/analyze", (req,res) => {
     spotifyWebAPI.setAccessToken(accessToken);
     spotifyWebAPI.getAudioAnalysisForTrack(trackUri).then(
         (data) => {
+            const processedData = processSegments(data.body.sections, data.body.segments);
+            //console.log(processedData)
             //console.log(data.body.segments);
             const dataAnalysis = data.body;
-            res.send(dataAnalysis)
+            res.send({tracks: dataAnalysis, segments: processedData});
         }).catch((err)=> {
             console.log(err);
             res.sendStatus(400);
