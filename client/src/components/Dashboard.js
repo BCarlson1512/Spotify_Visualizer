@@ -84,7 +84,7 @@ function Dashboard({ code }) {
             </FormControl>
             
             <Box flexGrow={1} style={{overflowY: 'auto'}}>
-            <p>Search Results</p>
+            <p>Search for a Track to start...</p>
             {searchResults.map(track => {
                 return <TrackResult props={track} key={track.uri} selectTrack={selectTrack} />
             })}

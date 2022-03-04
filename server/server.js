@@ -74,7 +74,7 @@ app.post("/refresh", (req,res) => {
             const vol = Math.abs(segment.loudness_max)
             for (const pitch of segment.pitches) {
                 const freq = startingFrequency * pitch;
-                const tmpObj = {startTime: Math.ceil((segment.start) * 100) / 100, finishTime: Math.ceil((segment.start + segment.duration) * 100) / 100, frequency: freq, volume: vol * pitch};
+                const tmpObj = {startTime: Math.ceil((segment.start) * 1000) / 1000, finishTime: Math.ceil((segment.start + segment.duration) * 1000) / 1000, frequency: freq, volume: vol * pitch};
                 if(segmentData.filter((e) => {return e.frequency === freq}).length === 0) {
                     segmentData.push(tmpObj);
                 }
