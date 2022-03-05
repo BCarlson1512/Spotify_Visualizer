@@ -19,6 +19,7 @@ function Dashboard({ code }) {
     const [trackURI, setTrackURI] = useState();
     const [trackAnalysis, setTrackAnalysis] = useState();
     const [segData, setSegData] = useState([]);
+
     const selectTrack = (track) => {
         setTrackURI(track.uri);
         setCurrentTrack(track);
@@ -84,7 +85,6 @@ function Dashboard({ code }) {
                 <InputLabel htmlFor="input-field">Search Artists/Songs</InputLabel>
                 <Input id="input-field" value={Search} onChange={e => setSearch(e.target.value)}/>
             </FormControl>
-            
             <Box flexGrow={1} style={{overflowY: 'auto'}}>
             <p>Search for a Track to start...</p>
             {searchResults.map(track => {
