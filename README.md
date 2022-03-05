@@ -23,7 +23,8 @@ Data processing
 
 - [x] Connect to Spotify API
 - [x] Playback in web browser
-- [ ] Create 2D Audio Visualization
+- [x] Create 2D Audio Visualization
+- [ ] Debug 2D Audio visualization/client
 - [ ] Sync visualization in real time
 - [ ] Implement Three.js Visualization
 - [ ] Clean up frontend code
