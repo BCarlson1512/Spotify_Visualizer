@@ -1,8 +1,6 @@
 import { Container, Box, Typography, Button } from '@mui/material';
 import React, { useEffect, useState } from 'react'
 
-//TODO: Componentize the visualizer bars
-
 /**
  * Updates the bar color/height from live data... TODO: Implement live data, rather than default results
  */
@@ -116,7 +114,7 @@ const minDuration = (segments) => {
     }
     return max;
 }
-
+/** Setup default bar heights, in the event empty data is passed along */
 const getDefaultBars = (barsLength) => {
     let i = 0;
     const bars = [];
@@ -125,11 +123,6 @@ const getDefaultBars = (barsLength) => {
     }
     return bars;
 };
-
-// accounting for floating point error, buffer of 0.01
-const filterCallback = (a,b) => {
-    return Math.abs(a.timeSignature - b.finishTime) <= 0.01;
-}
 
 export default function TrackVisualizer(props) {
 
@@ -141,10 +134,6 @@ export default function TrackVisualizer(props) {
     const {track} = props;
     const {segments} = props;
     const {segData} = props;
-    /*TODO: Further optimization, process data before it is sent to its respective component
-    const {segData} = props;
-    const {freqBands} = props;
-    */
     // waveform Constants
     const numBars = 50;
     //const segData = processSegments(sections, segments);
@@ -168,10 +157,10 @@ export default function TrackVisualizer(props) {
         e.preventDefault();
         setDisplayAnalytics(!displayAnalytics);
     }
-    console.log(segData)
+    //console.log(segData)
     /* hook for updating waveform data */
     useEffect(() => {
-        if(waveformState.timeSignature === segData[segData.length - 1].finishTime) return;
+        if(waveformState.timeSignature === segData[segData.length - 1].finishTime)return;
         //console.log(waveformState)
         let newData = segData.filter(segment => (Math.abs(segment.startTime - waveformState.timeSignature) <= 0.01))
         console.log(newData);
@@ -188,10 +177,8 @@ export default function TrackVisualizer(props) {
     /*[waveformState, segData, freqBands]*/
     return (
         <Container>
-        <Box sx={{display:"flex", justifyContent:"space-between", paddingBottom:"15vw"}}>
+        <Box sx={{display:"flex", justifyContent:"space-between", paddingBottom:"15vh"}}>
             <Typography gutterBottom variant ="h5" style={{marginLeft:"3",}}>Visualization</Typography>
-            <Button variant="contained" color="success" onClick={(e)=> analyticsClickHandler(e)}>{!displayAnalytics? "Show" : "Hide"} Analytics</Button>
-        </Box>
             {displayAnalytics &&
                 <Box className="analytics-container">
                     <Typography gutterBottom variant ="h6" style={{marginLeft:"3",}}>Track Analytics</Typography>
@@ -201,14 +188,16 @@ export default function TrackVisualizer(props) {
                     <Typography variant="body2" color="text.secondary">Total Segments {segData.length}</Typography>
                 </Box>
             }
-            <Box className="visualizer-container" sx={{display:"flex", paddingTop: "1vh"}}>
-                {waveformState.barsConfig ? waveformState.barsConfig.map(bar => (
-                    <Box sx={{backgroundColor:"primary.dark", height:bar.height, width:"1vw", marginLeft:"0.125vw"}}></Box>
-                )) :
-                defaultFreq.forEach(e => (
-                    <Box sx={{backgroundColor:"primary.dark", height:e, width:"1vw", marginLeft:"0.125vw"}}></Box>
-                ) )}
-            </Box>
+            <Button variant="contained" color="success" onClick={(e)=> analyticsClickHandler(e)}>{!displayAnalytics? "Show" : "Hide"} Analytics</Button>
+        </Box>
+        <Box className="visualizer-container" sx={{display:"flex", paddingTop: "1vh", height: "15vh"}}>
+            {waveformState.barsConfig ? waveformState.barsConfig.map(bar => (
+                <Box sx={{backgroundColor:"primary.dark", height:bar.height, width:"1vw", marginLeft:"0.125vw"}}></Box>
+            )) :
+            defaultFreq.forEach(e => (
+                <Box sx={{backgroundColor:"primary.dark", height:e, width:"1vw", marginLeft:"0.125vw"}}></Box>
+            ) )}
+        </Box>
         </Container>
     )
 }
