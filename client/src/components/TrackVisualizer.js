@@ -1,128 +1,13 @@
 import { Container, Box, Typography, Button } from '@mui/material';
 import React, { useEffect, useState } from 'react'
-
-/**
- * Updates the bar color/height from live data... TODO: Implement live data, rather than default results
- */
-const updateBarParams = (numBars, bars) => {
-    const barsData = []
-    let i = 0;
-    while(i < numBars) {
-        barsData[i] ={height: `${1 + bars[i] % 15}vh`}
-        ++i;
-    }
-    return barsData;
-}
-
-/**
- * Compare callback for objects by frequency
- * @param {*} a object a
- * @param {*} b object b
- * @returns -1 when freq(a) > freq(b) , 1 freq(a) < freq(b), 0 freq(a) === freq(b)
- */
-const compare = (a,b) => {
-    if(a.frequency > b.frequency) {
-        return 1;
-    }
-    if(a.frequency < b.frequency) {
-        return -1;
-    }
-    return 0;
-}
-/**
- * Generates waveform data at a specic time frame
- * @param {*} freqBands -> A set of frequencies "buckets" to group data into
- * @param {*} segments -> A set of segments belonging to the same start time
- */
-const updateBars = (freqBands, segments) =>{
-    segments = segments.sort((a,b) => compare(a,b));
-    //console.log(segments);
-    //console.log(freqBands);
-    const ret = []; // store height and frequency
-    let lofreq = 0;
-    let segCount = 0;
-    for(let i = 0; i < freqBands.length; i++) { // initialize values
-        ret[i] = 0;
-    }
-    while (segCount < segments.length) { // loop over segments
-        while(segCount < segments.length && segments[segCount].frequency <= freqBands[lofreq]) { // partition accordingly
-            ret[lofreq] += segments[segCount].volume;
-            segCount++;
-        }
-        lofreq++;
-    }
-    
-    return ret;
-}
-
-const initFreqBands = (maxFreq, numBands) => {
-    const interval = maxFreq / numBands;
-    const freqBands = [];
-    let tmp = 0;
-    for(let i = 0; i < numBands; i++) {
-        tmp += interval;
-        freqBands[i] = tmp;
-    }
-    //console.log(freqBands)
-    return freqBands
-}
-
-/**
- * Gets the average duration length
- * @param segments -> The array of segments
- */
-const averageDuration = (segments) => {
-    let averageDuration = 0;
-    for(const segment of segments) {
-        averageDuration += segment.duration;
-    }
-    return averageDuration / segments.length;
-}
-
-/**
- * Gets the max duration of segments
- */
-const maxDuration = (segments) => {
-    let max = -1;
-    for(const segment of segments) {
-        if (max < segment.duration) {
-            max = segment.duration;
-        }
-    }
-    return max;
-}
-
-const maxFreq = (segments) => {
-    let max = -1;
-    for(const segment of segments) {
-        if(segment.frequency > max){
-            max = segment.frequency;
-        }
-    }
-    return max;
-}
-
-/**
- * Gets the min duration of segments
- */
-const minDuration = (segments) => {
-    let max = 10000000;
-    for(const segment of segments) {
-        if (max > segment.duration) {
-            max = segment.duration;
-        }
-    }
-    return max;
-}
-/** Setup default bar heights, in the event empty data is passed along */
-const getDefaultBars = (barsLength) => {
-    let i = 0;
-    const bars = [];
-    for(i = 0; i < barsLength; i++) {
-        bars.push(1);
-    }
-    return bars;
-};
+import getDefaultBars from '../utils/visualizer/getDefaultBars'
+import updateBarParams from '../utils/visualizer/updateBarParams'
+import updateBars from '../utils/visualizer/updateBars'
+import initFreqBands from '../utils/visualizer/initFreqBands'
+import averageDuration from '../utils/visualizer/averageDuration'
+import maxDuration from '../utils/visualizer/maxDuration'
+import maxFreq from '../utils/visualizer/maxFreq'
+import minDuration from '../utils/visualizer/minDuration'
 
 export default function TrackVisualizer(props) {
 
@@ -130,6 +15,7 @@ export default function TrackVisualizer(props) {
     const {beats} = props;
     const {bars} = props;
     const {track} = props;
+    const {trackURI} = props;
     const {segments} = props;
     const {segData} = props;
     // waveform Constants
@@ -139,7 +25,7 @@ export default function TrackVisualizer(props) {
     const defaultFreq = getDefaultBars(numBars);
     // usestates
     const [displayAnalytics, setDisplayAnalytics] = useState(false);
-    
+    const [play, setPlay] = useState(false);
     /**
      * Waveform state
      */
@@ -151,12 +37,13 @@ export default function TrackVisualizer(props) {
         timeSigData: timeSigData,
         barsConfig: barConfig,
     });
-    console.log(waveformState);
+
     const analyticsClickHandler = (e) => {
         e.preventDefault();
         setDisplayAnalytics(!displayAnalytics);
     }
-    //console.log(segData)
+    console.log(segData)
+    console.log(waveformState)
     /* hook for updating waveform data */
     useEffect(() => {
         if(waveformState.timeSignature === segData[segData.length - 1].finishTime) return;
@@ -170,10 +57,19 @@ export default function TrackVisualizer(props) {
                 timeSigData: newData,
                 barsConfig: updateBarParams(numBars, barSteps),
             });
-            console.log(newData[0].finishTime - newData[0].startTime)
+            //console.log(newData[0].finishTime - newData[0].startTime)
         }, (newData[0].finishTime - newData[0].startTime) *1000);
     },[waveformState, segData, freqBands]);
-
+    useEffect(() => {
+        return () => {
+            console.log("Song change")
+            setWaveFormState({
+                timeSignature: 0,
+                timeSigData: timeSigData,
+                barsConfig: defaultFreq,
+            })
+        }
+    },[trackURI])
     return (
         <Container>
         <Box sx={{display:"flex", justifyContent:"space-between", paddingBottom:"15vh"}}>
@@ -191,7 +87,7 @@ export default function TrackVisualizer(props) {
         </Box>
         <Box className="visualizer-container" sx={{display:"flex", paddingTop: "1vh", height: "15vh"}}>
             {waveformState.barsConfig ? waveformState.barsConfig.map((bar,index) => (
-                <Box sx={{backgroundColor:"primary.dark", height:bar.height, width:"1vw", marginLeft:"0.125vw"}}></Box>
+                <Box key={`bar${index}`} sx={{backgroundColor:"primary.dark", height:bar.height, width:"1vw", marginLeft:"0.125vw"}}></Box>
             )) :
             defaultFreq.forEach(e => (
                 <Box sx={{backgroundColor:"primary.dark", height:e, width:"1vw", marginLeft:"0.125vw"}}></Box>

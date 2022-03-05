@@ -25,6 +25,10 @@ function Dashboard({ code }) {
         setSearch("");
     }
 
+    const updateProps = (segments, analysis) => {
+        setSegData(segments);
+        setTrackAnalysis(analysis);
+    }
     // auth useEffect
     useEffect(() => {
         if (!accessToken) return;
@@ -68,9 +72,7 @@ function Dashboard({ code }) {
             track_uri: trackURI,
             access_token: accessToken
         }}).then( res => {
-            //console.log(res.data.segments)
-            setSegData(res.data.segments);
-            setTrackAnalysis(res.data.tracks);
+            updateProps(res.data.segments, res.data.tracks)
         }).catch(()=> {
             console.log("An error occurred");
         });
@@ -100,6 +102,7 @@ function Dashboard({ code }) {
                     tatums={trackAnalysis.tatums}
                     track={trackAnalysis.track}
                     segData={segData}
+                    trackURI={trackURI}
                     />
                 </Box>
             }
