@@ -119,7 +119,7 @@ const getDefaultBars = (barsLength) => {
     let i = 0;
     const bars = [];
     for(i = 0; i < barsLength; i++) {
-        bars.push(0);
+        bars.push(1);
     }
     return bars;
 };
@@ -129,8 +129,6 @@ export default function TrackVisualizer(props) {
     // props
     const {beats} = props;
     const {bars} = props;
-    const {sections} = props;
-    const {tatums} = props;
     const {track} = props;
     const {segments} = props;
     const {segData} = props;
@@ -153,6 +151,7 @@ export default function TrackVisualizer(props) {
         timeSigData: timeSigData,
         barsConfig: barConfig,
     });
+    console.log(waveformState);
     const analyticsClickHandler = (e) => {
         e.preventDefault();
         setDisplayAnalytics(!displayAnalytics);
@@ -160,21 +159,21 @@ export default function TrackVisualizer(props) {
     //console.log(segData)
     /* hook for updating waveform data */
     useEffect(() => {
-        if(waveformState.timeSignature === segData[segData.length - 1].finishTime)return;
+        if(waveformState.timeSignature === segData[segData.length - 1].finishTime) return;
         //console.log(waveformState)
         let newData = segData.filter(segment => (Math.abs(segment.startTime - waveformState.timeSignature) <= 0.01))
-        console.log(newData);
-        const timeout = setTimeout(() => {
+        //console.log(newData);
+        setTimeout(() => {
             let barSteps = updateBars(freqBands, waveformState.timeSigData);
             setWaveFormState({
                 timeSignature: newData[0].finishTime,
                 timeSigData: newData,
                 barsConfig: updateBarParams(numBars, barSteps),
             });
-            
-        }, (newData[0].finishTime - newData[0].startTime) * 10)
+            console.log(newData[0].finishTime - newData[0].startTime)
+        }, (newData[0].finishTime - newData[0].startTime) *1000);
     },[waveformState, segData, freqBands]);
-    /*[waveformState, segData, freqBands]*/
+
     return (
         <Container>
         <Box sx={{display:"flex", justifyContent:"space-between", paddingBottom:"15vh"}}>
@@ -191,7 +190,7 @@ export default function TrackVisualizer(props) {
             <Button variant="contained" color="success" onClick={(e)=> analyticsClickHandler(e)}>{!displayAnalytics? "Show" : "Hide"} Analytics</Button>
         </Box>
         <Box className="visualizer-container" sx={{display:"flex", paddingTop: "1vh", height: "15vh"}}>
-            {waveformState.barsConfig ? waveformState.barsConfig.map(bar => (
+            {waveformState.barsConfig ? waveformState.barsConfig.map((bar,index) => (
                 <Box sx={{backgroundColor:"primary.dark", height:bar.height, width:"1vw", marginLeft:"0.125vw"}}></Box>
             )) :
             defaultFreq.forEach(e => (

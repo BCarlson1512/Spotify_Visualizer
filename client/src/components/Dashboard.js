@@ -92,6 +92,7 @@ function Dashboard({ code }) {
             {(trackAnalysis && segData) &&
                 <Box sx={{paddingBottom:"1vh"}}>
                     <TrackVisualizer 
+                    key={trackURI}
                     beats={trackAnalysis.beats} 
                     bars={trackAnalysis.bars}
                     sections={trackAnalysis.sections}
