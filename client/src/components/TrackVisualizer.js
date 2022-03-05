@@ -117,6 +117,20 @@ const minDuration = (segments) => {
     return max;
 }
 
+const getDefaultBars = (barsLength) => {
+    let i = 0;
+    const bars = [];
+    for(i = 0; i < barsLength; i++) {
+        bars.push(0);
+    }
+    return bars;
+};
+
+// accounting for floating point error, buffer of 0.01
+const filterCallback = (a,b) => {
+    return Math.abs(a.timeSignature - b.finishTime) <= 0.01;
+}
+
 export default function TrackVisualizer(props) {
 
     // props
@@ -135,7 +149,7 @@ export default function TrackVisualizer(props) {
     const numBars = 50;
     //const segData = processSegments(sections, segments);
     const freqBands = initFreqBands(maxFreq(segData),numBars);
-
+    const defaultFreq = getDefaultBars(numBars);
     // usestates
     const [displayAnalytics, setDisplayAnalytics] = useState(false);
     
@@ -159,7 +173,7 @@ export default function TrackVisualizer(props) {
     useEffect(() => {
         if(waveformState.timeSignature === segData[segData.length - 1].finishTime) return;
         //console.log(waveformState)
-        let newData = segData.filter(segment => segment.startTime === waveformState.timeSignature)
+        let newData = segData.filter(segment => (Math.abs(segment.startTime - waveformState.timeSignature) <= 0.01))
         console.log(newData);
         const timeout = setTimeout(() => {
             let barSteps = updateBars(freqBands, waveformState.timeSigData);
@@ -188,9 +202,12 @@ export default function TrackVisualizer(props) {
                 </Box>
             }
             <Box className="visualizer-container" sx={{display:"flex", paddingTop: "1vh"}}>
-                {waveformState.barsConfig.map(bar => (
+                {waveformState.barsConfig ? waveformState.barsConfig.map(bar => (
                     <Box sx={{backgroundColor:"primary.dark", height:bar.height, width:"1vw", marginLeft:"0.125vw"}}></Box>
-                ))}
+                )) :
+                defaultFreq.forEach(e => (
+                    <Box sx={{backgroundColor:"primary.dark", height:e, width:"1vw", marginLeft:"0.125vw"}}></Box>
+                ) )}
             </Box>
         </Container>
     )

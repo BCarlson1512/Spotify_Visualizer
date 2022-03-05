@@ -75,9 +75,7 @@ app.post("/refresh", (req,res) => {
             for (const pitch of segment.pitches) {
                 const freq = startingFrequency * pitch;
                 const tmpObj = {startTime: Math.ceil((segment.start) * 1000) / 1000, finishTime: Math.ceil((segment.start + segment.duration) * 1000) / 1000, frequency: freq, volume: vol * pitch};
-                if(segmentData.filter((e) => {return e.frequency === freq}).length === 0) {
-                    segmentData.push(tmpObj);
-                }
+                segmentData.push(tmpObj);
             }
         }
     }
